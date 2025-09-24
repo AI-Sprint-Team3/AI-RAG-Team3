@@ -1,6 +1,6 @@
 services:
   chroma:
-    image: chromadb/chroma:latest
+    image: chromadb/chroma:0.4.5
     container_name: chroma
     environment:
       CHROMA_PERSIST_DIRECTORY: /chroma_data
