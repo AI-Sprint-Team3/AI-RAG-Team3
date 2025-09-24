@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma
+    command: ["chroma", "run", "--path", "/chroma_data", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chroma_data:/chroma_data
+    restart: unless-stopped
