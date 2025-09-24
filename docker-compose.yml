@@ -3,9 +3,10 @@ services:
   chroma:
     image: chromadb/chroma:latest
     container_name: chroma
-    command: ["chroma", "run", "--path", "/chroma_data", "--host", "0.0.0.0", "--port", "8000"]
+    command: ["chroma-server", "--persist-directory", "/chroma_data", "--listen-addr", "0.0.0.0:8000"]
     ports:
       - "8002:8000"
     volumes:
       - ./chroma_data:/chroma_data
     restart: unless-stopped
+
