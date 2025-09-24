@@ -6,6 +6,7 @@ services:
       CHROMA_PERSIST_DIRECTORY: /chroma_data
       CHROMA_SERVER_HOST: 0.0.0.0
       CHROMA_SERVER_HTTP_PORT: 8000
+      CHROMA_API_IMPL: rest
     ports:
       - "8002:8000"
     volumes:
