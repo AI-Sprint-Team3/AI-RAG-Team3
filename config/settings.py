@@ -16,6 +16,6 @@ COLLECTION_NAME = os.getenv("COLLECTION_NAME", "default_collection")
 CSV_PATH = os.getenv("CSV_PATH", "data/raw/data_list.csv")
 FILE_PATH = os.getenv("FILE_PATH", "data/raw/files")
 
-# === LLM 관련 ===
-LLM_MODEL = os.getenv("LLM_MODEL", "gpt-5-mini")
+# === LLM ===
+LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4.1-mini")
 
