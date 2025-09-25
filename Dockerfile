@@ -27,4 +27,4 @@ USER appuser
 ENV HOME=/home/appuser
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "main.py"]
+CMD ["python3", "main.py"]
