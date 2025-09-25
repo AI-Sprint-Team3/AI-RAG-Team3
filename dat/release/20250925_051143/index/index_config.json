@@ -1,0 +1,9 @@
+{
+  "backend": "openai",
+  "model": "text-embedding-3-small",
+  "dim": 1536,
+  "index_type": "faiss.IndexFlatIP",
+  "vectors": 8271,
+  "faiss_path": "index/faiss.index",
+  "meta_path": "index/chunks_meta.jsonl"
+}
