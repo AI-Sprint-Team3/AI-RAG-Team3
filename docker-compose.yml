@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   chroma:
     image: chromadb/chroma:1.1.0
@@ -8,7 +10,30 @@ services:
       CHROMA_SERVER_HTTP_PORT: 8000
       CHROMA_API_IMPL: rest
     ports:
-      - "8002:8000"
+      - "8002:8000"   # 외부 접속 포트(팀원들은 VM_IP:8002 로 접근)
     volumes:
       - ./chroma_data:/chroma_data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v2/heartbeat || exit 1"]
+      interval: 5s
+      timeout: 2s
+      retries: 6
+      start_period: 5s
+
+  rag-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rag-app
+    depends_on:
+      - chroma
+    volumes:
+      - .:/app               # 개발용: 코드 변경 즉시 반영. 프로덕션은 제거 권장.
+    environment:
+      PYTHONUNBUFFERED: "1"
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CHROMA_SERVER: http://chroma:8000
+    entrypoint: ["/app/tools/wait-for-chroma.sh"]
+    command: ["python", "main.py"]
     restart: unless-stopped
