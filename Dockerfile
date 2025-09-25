@@ -19,6 +19,7 @@ RUN pip install --upgrade pip \
 
 # 소스 복사
 COPY . /app
+RUN chmod +x /app/tools/wait-for-chroma.sh
 
 # 비루트 사용자 설정
 RUN useradd --create-home --uid 1000 appuser \
