@@ -1,0 +1,1 @@
+print("[임시] main.py 실행")

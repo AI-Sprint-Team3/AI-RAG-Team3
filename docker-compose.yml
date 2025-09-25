@@ -15,11 +15,12 @@ services:
       - ./chroma_data:/chroma_data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v2/heartbeat || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v2/heartbeat || exit 1"]
       interval: 5s
       timeout: 2s
       retries: 6
       start_period: 5s
+
 
   rag-app:
     build:
