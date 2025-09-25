@@ -16,10 +16,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v2/heartbeat || exit 1"]
-      interval: 5s
-      timeout: 2s
-      retries: 6
-      start_period: 5s
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
 
   rag-app:
