@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git curl \
     poppler-utils libgl1 \
+    bash \
     && rm -rf /var/lib/apt/lists/*
 
 # requirements 설치
