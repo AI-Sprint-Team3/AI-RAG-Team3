@@ -1,0 +1,18 @@
+python-dotenv
+openai
+
+# LangChain
+langchain
+langchain-community
+langchain-openai
+
+os-sys
+pandas
+PyPDF2
+olefile
+tqdm
+faiss-cpu
+chromadb
+
+pymupdf4llm
+chromadb==1.1.0
