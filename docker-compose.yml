@@ -34,8 +34,8 @@ services:
       PYTHONUNBUFFERED: "1"
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       CHROMA_SERVER: http://chroma:8000
-    entrypoint: ["/app/tools/wait-for-chroma.sh"]
-    command: ["python", "main.py"]
+    entrypoint: ["bash", "/app/tools/wait-for-chroma.sh"]
+    command: ["python3", "main.py"]
     restart: unless-stopped
     deploy:
       resources:
