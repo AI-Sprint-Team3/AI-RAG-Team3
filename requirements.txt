@@ -1,7 +1,6 @@
 # OpenAI 및 LangChain
 openai==1.109.1
 langchain==0.3.27
-langchain-chroma==0.1.2
 langchain-community==0.3.29
 langchain-openai==0.3.33
 tiktoken==0.11.0
