@@ -1,34 +1,29 @@
 import os
-from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings
+import chromadb
+from chromadb.config import Settings
 
 def main():
-    # 환경 변수에서 가져오기
-    openai_api_key = os.getenv("OPENAI_API_KEY")
+    # 환경 변수에서 Chroma 서버 주소 가져오기
     chroma_server = os.getenv("CHROMA_SERVER", "http://chroma:8000")
-    persist_dir = "./chroma_data"  # docker-compose에서 마운트된 경로
+    host = chroma_server.replace("http://", "").split(":")[0]
+    port = int(chroma_server.split(":")[-1])
 
-    if not openai_api_key:
-        raise ValueError("❌ OPENAI_API_KEY가 설정되지 않았습니다. .env 파일을 확인하세요.")
+    print(f"🔗 ChromaDB 서버 연결 시도: {host}:{port}")
 
-    print("🔑 OpenAI API Key Loaded")
-    print(f"🔗 Connecting to Chroma at {chroma_server}")
-
-    # OpenAI 임베딩 모델 설정
-    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-
-    # Chroma 벡터 DB 연결 (persist_directory 사용)
-    db = Chroma(
-        persist_directory=persist_dir,
-        embedding_function=embeddings
+    # 클라이언트 생성
+    client = chromadb.HttpClient(
+        host=host,
+        port=port,
+        settings=Settings(allow_reset=True)
     )
 
-    # ✅ 연결 확인: DB에 저장된 문서 수 출력
-    try:
-        count = db._collection.count()  # 내부적으로 컬렉션 카운트
-        print(f"✅ Chroma 연결 성공! 현재 문서 수: {count}")
-    except Exception as e:
-        print(f"❌ Chroma 연결 실패: {e}")
+    # 연결 확인 (heartbeat)
+    heartbeat = client.heartbeat()
+    print(f"✅ Heartbeat: {heartbeat}")
+
+    # collections 확인 (아직 아무것도 없을 가능성 큼)
+    collections = client.list_collections()
+    print(f"📂 현재 collections: {collections}")
 
 if __name__ == "__main__":
     main()
