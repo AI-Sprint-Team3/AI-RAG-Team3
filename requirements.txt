@@ -1,3 +1,36 @@
-python-dotenv==1.1.1
+# OpenAI 및 LangChain
+openai==1.109.1
 langchain==0.3.27
+langchain-community==0.3.29
 langchain-openai==0.3.33
+tiktoken==0.11.0
+
+# 데이터 처리
+pandas==2.3.2
+numpy==2.2.6
+PyPDF2==3.0.1
+pymupdf4llm==0.0.27
+python-docx==1.1.2
+
+# 웹/유틸리티
+python-dotenv==1.1.1
+requests==2.32.5
+beautifulsoup4==4.13.5
+matplotlib==3.10.6
+tqdm==4.67.1
+
+# 개발용/디버깅
+jupyterlab==3.6.3
+ipykernel==6.28.0
+black==23.12.0
+isort==5.12.0
+pytest==7.4.2
+
+# GPU 관련 (PyTorch + CUDA)
+torch==2.3.0+cu121
+torchvision==0.18.0+cu121
+torchaudio==2.3.0+cu121
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+# Chroma DB
+chromadb==1.1.0

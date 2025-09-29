@@ -10,7 +10,7 @@ class OpenAIRAGClient:
   """
   def __init__(self, api_key: str = OPENAI_API_KEY, model: str = LLM_MODEL,
                 temperature: float = 0.7,
-                max_tokens: int = 2048,
+                max_tokens: int = 8192,
                 top_p: float = 1.0,
                 frequency_penalty: float = 0.0,
                 presence_penalty: float = 0.0):
@@ -85,8 +85,8 @@ class OpenAIRAGClient:
     print(f"finish_reason: {finish_reason}")
     
     # history 저장
-    self.conversation_history.append({"role": "user", "content": question})
-    self.conversation_history.append({"role": "assistant", "content": answer})
+    # self.conversation_history.append({"role": "user", "content": question})
+    # self.conversation_history.append({"role": "assistant", "content": answer})
 
 
     
