@@ -1,4 +1,4 @@
-from generation.prompt_templates import SUMMARY_PROMPT, QA_PROMPT
+from src.generation.prompt_templates import SUMMARY_PROMPT, QA_PROMPT
 import openai
 
 def select_prompt_auto(question: str) -> str:
