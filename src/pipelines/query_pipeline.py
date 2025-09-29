@@ -1,5 +1,6 @@
 import json
 from config.settings import COLLECTION_NAME
+from config.path import DOCS_PATH
 from src.embeddings.embedder import EmbedderFactory
 from src.embeddings.vectorstore_chroma import add_docs_to_chroma, get_collection, delete_collection, show_collection
 from src.retrieval.bm25_helper import BM25Helper
@@ -7,7 +8,7 @@ from src.retrieval.retriever import advanced_retrieve
 
 # TODO: 실제 경로 반영하기
 # === 실제 데이터 경로 ===
-DATA_PATH = "/Users/carki/Desktop/Dev/codeit_project/ai3-team3-RAG/docs_merged.jsonl"
+DATA_PATH = DOCS_PATH
 
 # ==== 0) 문서 로드 ====
 def load_docs():
