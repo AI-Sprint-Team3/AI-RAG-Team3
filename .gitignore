@@ -204,3 +204,4 @@ pyrightconfig.json
 .ionide*.ipynb
 notebooks/*.ipynb
 .ipynb_checkpoints/
+*.ipynb
