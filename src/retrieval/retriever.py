@@ -1,5 +1,5 @@
 import numpy as np
-
+import unicodedata
 def distance_to_similarity(distance, metric="cosine"):
     # distance -> similarity 로 변환 (간단한 처리)
     if metric == "cosine":
@@ -22,9 +22,16 @@ def minmax_norm(arr):
     
     return (a - mn) / (mx - mn)
 
+def normalize_str(s):
+    if s is None:
+        return None
+    # NFC: 결합형, NFD: 분리형
+    return unicodedata.normalize('NFC', s)
+
 def advanced_retrieve(query, collection, embedding_fn, bm25=None,
                       agency_filter=None, top_k=3, k_large=40,
                       use_bm25=True, use_mmr=True, metric="cosine"):
+    
     # 1) query embedding
     query_emb = embedding_fn.embed_query(query)
 
@@ -56,7 +63,7 @@ def advanced_retrieve(query, collection, embedding_fn, bm25=None,
 
     # 4) metadata 필터링 (merge_key)
     if agency_filter:
-        filtered = [c for c in candidates if c["meta"].get("merge_key") == agency_filter]
+        filtered = [c for c in candidates if normalize_str(c["meta"].get("merge_key")) == normalize_str(agency_filter)]
         if not filtered:
             # fallback: 전체 후보에서 top_k 리턴
             print("⚠️ 메타 필터링 결과 없음 → 전체 후보 사용")
