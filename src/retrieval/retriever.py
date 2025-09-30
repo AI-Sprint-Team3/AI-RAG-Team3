@@ -30,45 +30,77 @@ def normalize_str(s):
 
 def advanced_retrieve(query, collection, embedding_fn, bm25=None,
                       agency_filter=None, top_k=3, k_large=40,
-                      use_bm25=True, use_mmr=True, metric="cosine"):
+                      use_bm25=True, use_mmr=True, metric="cosine", max_retry=3):
+    """
+    필터링 후보 없을 경우 top_k를 늘리면서 재검색
+    """
     
     # 1) query embedding
     query_emb = embedding_fn.embed_query(query)
-
-    # 2) dense search
-    results = collection.query(
-        query_embeddings=[query_emb], 
-        n_results=k_large
-    )
-    ids = results["ids"][0]
-    docs = results["documents"][0]
-    metas = results["metadatas"][0]
-    dists = results["distances"][0]
+    seen_ids = set()
+    attempt = 0
     
-    # for c in results:
-    #     similarity = 1 - c["dist"]   # 또는 distance_to_similarity(c["dist"])
-    #     print(f"유사도: {similarity:.4f} | merge_key: {c['meta']['merge_key']}")
+    while attempt < max_retry:
 
-    # 3) candidates 구성
-    candidates = []
-    for doc_text, meta, dist, did in zip(docs, metas, dists, ids):
-        sim = distance_to_similarity(dist, metric=metric)
-        candidates.append({
-            "id": did, 
-            "text": doc_text, 
-            "meta": meta, 
-            "dist": dist, 
-            "sim": sim
-        })
+        # 2) dense search
+        results = collection.query(
+            query_embeddings=[query_emb], 
+            n_results=k_large * (attempt + 1)  # top_k 증가
+        )
+        ids = results["ids"][0]
+        docs = results["documents"][0]
+        metas = results["metadatas"][0]
+        dists = results["distances"][0]
+        
+        # for c in results:
+        #     similarity = 1 - c["dist"]   # 또는 distance_to_similarity(c["dist"])
+        #     print(f"유사도: {similarity:.4f} | merge_key: {c['meta']['merge_key']}")
 
-    # 4) metadata 필터링 (merge_key)
-    if agency_filter:
-        filtered = [c for c in candidates if normalize_str(c["meta"].get("merge_key")) == normalize_str(agency_filter)]
-        if not filtered:
-            # fallback: 전체 후보에서 top_k 리턴
-            print("⚠️ 메타 필터링 결과 없음 → 전체 후보 사용")
+        # 3) candidates 구성
+        candidates = []
+        for doc_text, meta, dist, did in zip(docs, metas, dists, ids):
+            if did in seen_ids:
+                continue  # 이미 본 후보 제외
+            sim = distance_to_similarity(dist, metric=metric)
+            candidates.append({
+                "id": did, 
+                "text": doc_text, 
+                "meta": meta, 
+                "dist": dist, 
+                "sim": sim
+            })
+            seen_ids.add(did)
+
+        # 4) metadata 필터링 (merge_key)
+        find = False
+        if agency_filter:
+            filtered = [c for c in candidates if normalize_str(c["meta"].get("merge_key")) == normalize_str(agency_filter)]
+            if filtered:
+                candidates = filtered
+                find = True
+                break  # 후보 확보 → 루프 종료
+            else:
+                print(f"⚠️ 메타 필터링 결과 없음 → 다음 k_large 후보 재검색")
+                attempt += 1
+                continue
+        
+                # if not filtered:
+                #     # fallback: 전체 후보에서 top_k 리턴
+                #     # print("⚠️ 메타 필터링 결과 없음 → 전체 후보 사용")
+                #     print("⚠️ 메타 필터링 결과 없음 → 재검색 필요")
+                #     return []
+                # else:
+                #     candidates = filtered
         else:
-            candidates = filtered
+            find = True
+            break
+    
+    # 필터가 없음 -> 종료
+    if not find or not candidates:
+        print("⚠️ 메타 필터링 결과 없음 → 문서 못 찾음")
+        return []
+            
+            
 
     # 5) BM25 스코어 결합
     if use_bm25 and bm25 is not None:

@@ -30,11 +30,12 @@ if __name__ == "__main__":
 
     # 3) 벡터DB 연결
     collection = get_collection(COLLECTION_NAME)
+    print(collection.count())
     
     # 4) 문서 업로드 (배치)
-    print("📌 문서 업로드 중...")
-    add_docs_to_chroma(documents, collection=collection, embedding_fn=embedding_fn, batch_size=8)
-    print("✅ 업로드 완료")
+    # print("📌 문서 업로드 중...")
+    # add_docs_to_chroma(documents, collection=collection, embedding_fn=embedding_fn, batch_size=8)
+    # print("✅ 업로드 완료")
 
     # 5) BM25 인덱스 준비 (chunk 텍스트를 기반으로 하는 게 이상적)
     corpus_texts = [d.get("texts", {}).get("merged", "") for d in documents if d.get("texts", {}).get("merged", "")]
