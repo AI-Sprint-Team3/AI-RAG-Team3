@@ -7,6 +7,7 @@ from src.generation.prompt_selector import select_prompt_auto, select_prompt_man
 from src.generation.response_postprocess import clean_response
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import Document  
+from src.generation.utils import cross_check_answer, extract_keywords_from_text
 
 class LLMPipeline:
   """
@@ -30,7 +31,7 @@ class LLMPipeline:
     - 없으면 자동 분기(select_prompt)
     """
     
-    # RAG context 가져오기
+    # 1) RAG context 가져오기
     context = ""
     if contexts is None and self.retriever:
       results = self.retriever(query)   # advanced_retrieve 반환값
@@ -39,20 +40,20 @@ class LLMPipeline:
     else:
       context = contexts or ""
       
-    # 프롬프트 선택 - 키워드
+    # 2-1) 프롬프트 선택 - 키워드
     # if prompt_type:
     #   prompt_template = select_prompt_manual(prompt_type)
     # else:
     #   prompt_template = select_prompt_auto(query)
     
-    # 프롬프트 선택 - llm
+    # 2-2) 프롬프트 선택 - llm
     prompt_template = select_prompt_by_intent(query)
     
-    # memory 불러오기 (이전 대화 기록)
+    # 3) memory 불러오기 (이전 대화 기록)
     history = self.memory.load_memory_variables({})["history"]
 
     
-    # LLM 호출
+    # 4) LLM 호출
     raw_response = self.llm.generate(
       question=query,             # 실제 사용자 질문
       template=prompt_template,   # 선택된 프롬프트
@@ -60,15 +61,24 @@ class LLMPipeline:
       history=history
     )
     
-    # 후처리
+    # 5) 후처리
     response = clean_response(raw_response)
     
-    # 히스토리 추가
+    # 6) 히스토리 추가
     self.memory.save_context(
       {"input": query},   # user message
       {"output": response}  # assistant message
       )
-    return response
+    
+    # 7) cross-check 적용
+    candidates = [{"content": doc.page_content, "meta": doc.metadata} for doc in context]
+    cross_result = cross_check_answer(response, candidates)
+    
+    # 8) 최종반화: LLM 응답 + 근거 검증 결과
+    return {
+      "answer": response,
+      "cross_check": cross_result
+    }
 
   def convert_to_documents(self, results: List[Dict], include_score: bool = True) -> List[Document]:
     """
@@ -82,6 +92,7 @@ class LLMPipeline:
         
       docs.append(Document(page_content=r["text"], metadata=meta))
     return docs
+  
 
   @property
   def chat_history(self):
@@ -101,7 +112,9 @@ def make_retriever(collection, embedding_fn, top_k=3, use_mmr=True, use_bm25=Tru
   from src.retrieval.retriever import advanced_retrieve
 
   def retriever_fn(query):
-    return advanced_retrieve(
+    print(f"=== advanced_retrieve 호출 ===")
+    print(f"filter_title: {filter_title}")
+    results = advanced_retrieve(
       query=query,
       collection=collection,
       embedding_fn=embedding_fn,
@@ -111,7 +124,8 @@ def make_retriever(collection, embedding_fn, top_k=3, use_mmr=True, use_bm25=Tru
       bm25=bm25,
       agency_filter=filter_title,
     )
-
+    return results
+  
   return retriever_fn
 
 def run_queries(pipeline, queries: List[str]):
@@ -121,15 +135,26 @@ def run_queries(pipeline, queries: List[str]):
   for q in queries:
     results = pipeline.retriever(q)  # retriever에 필터/옵션 적용됨
     contexts = pipeline.convert_to_documents(results, include_score=True)
-    answer = pipeline.run(q, contexts)
-    # answer = pipeline.run(q)
-    print(f"Q: {q}\nA: {answer}\n")
-    print("*" * 50 + "\n")
+    response = pipeline.run(q, contexts)
+    # response = pipeline.run(q)
+    cross_check = response['cross_check']
+    
+    print(f"Q: {q}")
+    print(f"A: {response['answer']}\n")
+    print(f"Confidence: {cross_check['confidence']:.2f} | Validity: {cross_check['validity']}\n")
+    
+    print("Matched keywords:", ", ".join(cross_check['matched_keywords']) or "None")
+    ak = cross_check['answer_keywords']
+    print("Answer keywords:", ", ".join(ak[:10]) + (", ..." if len(ak) > 10 else ""))
+    ck = cross_check['candidate_keywords']
+    print("Candidate keywords:", ", ".join(ck[:10]) + (", ..." if len(ck) > 10 else ""))
+    
+    print("\n" + "*" * 50 + "\n")
 
 if __name__ == "__main__":
   from functools import partial
   from src.embeddings.embedder import EmbedderFactory
-  from src.embeddings.vectorstore_chroma import get_collection
+  from src.embeddings.vectorstore_chroma import get_collection, add_docs_to_chroma
   from src.retrieval.retriever import advanced_retrieve
   from src.retrieval.bm25_helper import BM25Helper
   from src.generation.llm_openai import OpenAIRAGClient
@@ -143,11 +168,15 @@ if __name__ == "__main__":
   # 2) 벡터 DB & 임베딩 주비
   collection = get_collection(COLLECTION_NAME)
   embedding_fn = EmbedderFactory.get_embedder(provider="openai")
-  
-  # 3) BM25 준비
+
+  # 문서 업로드 (배치)
   documents = load_docs()
-  print(f"✅ 불러온 문서 수: {len(documents)}")
-  
+  # print("📌 문서 업로드 중...")
+  # add_docs_to_chroma(documents, collection=collection, embedding_fn=embedding_fn, batch_size=8)
+  # print("✅ 업로드 완료")
+      
+  # 3) BM25 준비
+  # print(f"✅ 불러온 문서 수: {len(documents)}")
   corpus_texts = [d.get("texts", {}).get("merged", "") for d in documents if d.get("texts", {}).get("merged", "")]
   bm25_helper = BM25Helper(corpus_texts)
   
@@ -158,7 +187,7 @@ if __name__ == "__main__":
     bm25=bm25_helper,
     top_k=3,
     use_mmr=True,
-    filter_title="2025_구미_아시아육상경기대회_조직위원회_2025_구미아시아육상"
+    filter_title='전북특별자치도_정읍시_정읍체육트레이닝센터_통합운영관리시스템_구'
   )
   
   # 5) LLMPipeLine 생성
@@ -173,9 +202,3 @@ if __name__ == "__main__":
   ]
 
   run_queries(pipeline, queries)
-  
-  query = "아시아 육상 경기 대회 요구사항"
-  response = pipeline.run(query)
-  
-  print("=== LLM 응답 ===")
-  print(response)
