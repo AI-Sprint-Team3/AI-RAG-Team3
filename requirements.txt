@@ -47,3 +47,15 @@ pydeck==0.9.1
 smmap==5.0.2
 toml==0.10.2
 watchdog==6.0.0
+
+# konlpy + dateparser
+konlpy
+dateparser
+JPype1>=0.7.0
+lxml>=4.1.0
+numpy>=1.6
+packaging
+pytz>=2024.2
+tzlocal>=0.2
+regex>=2024.9.11
+six>=1.5
