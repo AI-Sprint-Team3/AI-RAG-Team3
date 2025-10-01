@@ -1,0 +1,7 @@
+path,type,note
+/home/spai0308/data/release/20250929/data/docs_merged.jsonl,canon,sha256=6ff50832d11f01d7f794680ee13d3e1964848a98b2de23c9c1c1d993dce32138
+/home/spai0308/data/release/20250929/data/docs_merged.fixed.jsonl,optional,
+/home/spai0308/data/release/20250929/data/legacy/docs_merged.jsonl,optional,
+/home/spai0308/data/release/20250929/data/diagnosis_after_fix.csv,optional,
+/home/spai0308/data/release/20250929/interim/empty_docs_diagnosis.csv,optional,
+/home/spai0308/data/release/20250929/reports/release_diagnosis.txt,report,text_presence
