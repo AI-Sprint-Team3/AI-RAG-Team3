@@ -110,6 +110,7 @@ python -m src.pipelines.llm_pipeline
 
 ---
 # 7. 보고서(발표자료)
-파트별 정리 사항: https://www.notion.so/277df0f96e6d806db567e60a2a95570c
-발표 자료: [3팀_최종발표자료_rfp문서_rag.pdf](https://github.com/user-attachments/files/22635075/3._._rfp._rag.pdf)
+파트별 정리 사항: https://www.notion.so/277df0f96e6d806db567e60a2a95570c                  
+발표자료: [3팀_최종발표자료_rag.pdf](https://github.com/user-attachments/files/22635108/3._._rag.pdf)
+
 
