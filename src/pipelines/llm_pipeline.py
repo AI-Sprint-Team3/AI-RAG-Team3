@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from typing import List, Dict
 from src.generation.prompt_selector import select_prompt_auto, select_prompt_manual, select_prompt_by_intent
-from src.generation.response_postprocess import clean_response
+from src.generation.response_postprocess import pretty_format_answer
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import Document  
 from src.generation.utils import cross_check_answer, extract_keywords_from_text
@@ -65,7 +65,7 @@ class LLMPipeline:
     )
     
     # 5) 후처리
-    response = clean_response(raw_response)
+    response = pretty_format_answer(raw_response)
     
     # 6) 히스토리 추가
     self.memory.save_context(
@@ -198,7 +198,8 @@ def run_queries(pipeline, queries: List[str]):
     print(f"A: {response['answer']}\n")
     print(f"Confidence: {cross_check['confidence']:.2f} | Validity: {cross_check['validity']}\n")
     
-    print("Matched keywords:", ", ".join(cross_check['matched_keywords']) or "None")
+    mk = cross_check['matched_keywords']
+    print("Matched keywords:", ", ".join(mk[:10]) + (", ..." if len(mk) > 10 else ""))
     ak = cross_check['answer_keywords']
     print("Answer keywords:", ", ".join(ak[:10]) + (", ..." if len(ak) > 10 else ""))
     ck = cross_check['candidate_keywords']
@@ -236,38 +237,52 @@ if __name__ == "__main__":
   bm25_helper = BM25Helper(corpus_texts)
   
   # 4) advanced_retrieve 래핑 - 조건 o
-  # retriever = make_retriever(
-  #   collection=collection,
-  #   embedding_fn=embedding_fn,
-  #   bm25=bm25_helper,
-  #   top_k=3,
-  #   use_mmr=True,
-  #   filter_title='bioin_의료기기산업_종합정보시스템_정보관리기관_기능개선_사업_2차'
-  # )
-
-  # 조건 x
   retriever = make_retriever(
     collection=collection,
     embedding_fn=embedding_fn,
     bm25=bm25_helper,
     top_k=3,
     use_mmr=True,
+    filter_title='bioin_의료기기산업_종합정보시스템_정보관리기관_기능개선_사업_2차'
   )
+
+  # 조건 x
+  # retriever = make_retriever(
+  #   collection=collection,
+  #   embedding_fn=embedding_fn,
+  #   bm25=bm25_helper,
+  #   top_k=3,
+  #   use_mmr=True,
+  # )
   
   # 5) LLMPipeLine 생성
   pipeline = LLMPipeline(llm=llm, retriever=retriever)
   
   # 6) 테스트 쿼리 실행
   # 쿼리 실행 - 여러개
-  
-  # queries = [
-  #     "이 사업의 목적은 무엇인가요?",
-  #     "과업 수행 기간은 언제부터 언제까지인가요?",
-  #     "과업의 범위는 무엇을 포함하나요?",
-  #     "발주 기관은 어디인가요?"
-  # ]
   queries = [
-    "아시아 육상 경기 대회 요구사항이 뭔가요?"
+      "이 사업의 목적은 무엇인가요?",
+      "과업 수행 기간은 언제부터 언제까지인가요?",
+      "과업의 범위는 무엇을 포함하나요?",
+      "발주 기관은 어디인가요?",
+      "입찰 참여 마감일은 언제인가요?",
+      "이 사업의 주요 산출물은 무엇인가요?",
+      "과업 대상 지역은 어디인가요?",
+      "사업 금액은 얼마인가요?",
+      "문서 이름 알려줄 수 있어?",
+      "사업 기간 알려줘",
+      "이 공고는 중소기업만 참여 가능한가요?", # confidence 체크
+      "입찰 방식이 제한경쟁인가요, 아니면 일반경쟁인가요?",
+      "사업 수행 장소는 서울인가요?",  # hallucination 방지
+      "참가자격 제한사항 중 필수 보유 면허가 있나요?"
+      "이 공고의 총 직원 수는 몇 명인가요?",
+      "계약 보증 관련된 특이사항이 있나요?",
+      "제안서 발표는 오프라인만 가능한가요?",
+      "문서 요약해줘",    # 요약
+      
   ]
+  # queries = [
+    # "아시아 육상 경기 대회 요구사항이 뭔가요?"
+  # ]
 
   run_queries(pipeline, queries)
