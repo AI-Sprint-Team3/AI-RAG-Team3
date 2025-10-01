@@ -1,0 +1,11 @@
+.git
+__pycache__
+*.pyc
+.env
+venv
+.vscode
+data/raw
+data/processed
+data/embeddings
+chroma_data
+.DS_Store

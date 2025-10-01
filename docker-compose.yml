@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  chroma:
+    image: chromadb/chroma:1.1.0
+    container_name: chroma
+    environment:
+      CHROMA_PERSIST_DIRECTORY: /chroma_data
+      CHROMA_SERVER_HOST: 0.0.0.0
+      CHROMA_SERVER_HTTP_PORT: 8000
+      CHROMA_API_IMPL: rest
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./chroma_data:/chroma_data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v2/heartbeat || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+
+  rag-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    container_name: rag-app
+    depends_on:
+      - chroma
+    volumes:
+      - .:/app
+    environment:
+      PYTHONUNBUFFERED: "1"
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CHROMA_SERVER: http://chroma:8000
+    entrypoint: ["bash", "/app/tools/wait-for-chroma.sh"]
+    command: ["python3", "main.py"]
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]  # GPU 사용
