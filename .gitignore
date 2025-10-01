@@ -201,7 +201,4 @@ pyrightconfig.json
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
 .history
-.ionide*.ipynb
-notebooks/*.ipynb
-.ipynb_checkpoints/
-*.ipynb
+
