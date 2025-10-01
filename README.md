@@ -56,13 +56,13 @@ rag-project/
 
 # 2. 설치 및 실행 방법
 
-## 1) 설치
+## 1) 도커 실행
 ```
-git clone https://github.com/your-repo/rag-project.git
-cd AI-RAG-Team3
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+sudo docker system prune -a --volumes -f
+docker compose pull
+docker compose build --no-cache rag-app
+docker compose up -d
+docker compose ps
 ```
 ## 2) 실행 (추후 업데이트)
 **Streamlit UI 실행**
