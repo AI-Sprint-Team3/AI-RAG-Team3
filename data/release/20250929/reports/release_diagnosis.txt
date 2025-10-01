@@ -1,0 +1,10 @@
+=== RELEASE DIAGNOSIS ===
+time   : 2025-09-29 05:27:19
+root   : /home/spai0308/data/release/20250929
+canon  : /home/spai0308/data/release/20250929/data/docs_merged.jsonl
+sha256 : 6ff50832d11f01d7f794680ee13d3e1964848a98b2de23c9c1c1d993dce32138
+
+[scan]
+total  : 110
+empties: 0
+per field(has>0): {'xml': 64, 'html': 41, 'ocr': 0, 'pdf': 5, 'merged': 110}

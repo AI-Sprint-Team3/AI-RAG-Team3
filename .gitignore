@@ -201,10 +201,4 @@ pyrightconfig.json
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
 .history
-.ionide
 
-
-# 임시
-convert_md
-data/raw_pdf
-data_test
