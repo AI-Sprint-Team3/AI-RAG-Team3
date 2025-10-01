@@ -114,4 +114,3 @@ python -m src.pipelines.llm_pipeline
 발표자료: [3팀_최종발표자료_rag.pdf](https://github.com/user-attachments/files/22635108/3._._rag.pdf)
 
 
-
